@@ -1,0 +1,10 @@
+[package]
+name = "rural"
+version = "0.0.0"
+authors = ["Saghm Rossi <saghmrossi@gmail.com>"]
+repository = "https://github.com/saghm/rural"
+keywords = ["http", "curl", "httpie"]
+license = "MIT"
+description = "A command-line HTTP tool."
+
+[dependencies]
