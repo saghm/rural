@@ -1,10 +1,12 @@
 [package]
-name = "rural"
-version = "0.0.0"
 authors = ["Saghm Rossi <saghmrossi@gmail.com>"]
-repository = "https://github.com/saghm/rural"
 keywords = ["http", "curl", "httpie"]
 license = "MIT"
 description = "A command-line HTTP tool."
+name = "rural"
+repository = "https://github.com/saghm/rural"
+version = "0.1.0"
 
 [dependencies]
+clap = "2.19.3"
+hyper = "0.9.14"
