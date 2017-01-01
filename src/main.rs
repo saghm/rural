@@ -19,19 +19,27 @@ fn run() -> Result<()> {
             .help("URL to request")
             .required(true)
             .index(1))
+        .arg(Arg::with_name("headers")
+            .short("d")
+            .long("headers")
+            .help("Print response headers instead of body"))
         .get_matches();
 
     let client = Client::new();
     let url = matches.value_of("URL").unwrap();
 
     let mut res = client.get(url).send()?;
-    let mut buf = String::new();
-    let _ = res.read_to_string(&mut buf)?;
-    println!("{}", buf);
+
+    if matches.is_present("headers") {
+        println!("{}", res.headers);
+    } else {
+        let mut buf = String::new();
+        let _ = res.read_to_string(&mut buf)?;
+        println!("{}", buf);
+    }
 
     Ok(())
 }
-
 
 fn main() {
     if let Err(err) = run() {
