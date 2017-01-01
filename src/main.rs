@@ -10,7 +10,7 @@ use std::io::Read;
 use clap::{Arg, App};
 use hyper::Client;
 
-fn main() {
+fn run() -> Result<()> {
     let matches = App::new("rural")
         .version(env!("CARGO_PKG_VERSION"))
         .author("Saghm Rossi <saghmrossi@gmail.com>")
@@ -24,9 +24,19 @@ fn main() {
         .get_matches();
 
     let client = Client::new();
-    let mut res = client.get(matches.value_of("url").unwrap()).send().unwrap();
-    let mut buf = String::new();
-    let _ = res.read_to_string(&mut buf).unwrap();
+    let url = matches.value_of("url").unwrap();
 
+    let mut res = client.get(url).send()?;
+    let mut buf = String::new();
+    let _ = res.read_to_string(&mut buf)?;
     println!("{}", buf);
+
+    Ok(())
+}
+
+
+fn main() {
+    if let Err(err) = run() {
+        println!("{}", err);
+    }
 }
