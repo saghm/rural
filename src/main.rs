@@ -6,12 +6,13 @@ extern crate regex;
 
 mod client;
 mod error;
+mod url_builder;
 
 use client::Client;
 
 use clap::{Arg, App};
 
-// Shamelessly stolen from burntsushi.
+// Shamelessly stolen from burntsushi (okay, maybe with a *little* shame).
 macro_rules! eprintln {
     ($($tt:tt)*) => {{
         use std::io::Write;

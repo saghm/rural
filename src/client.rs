@@ -1,11 +1,11 @@
 use error::{Error, Result};
+use url_builder::UrlBuilder;
 
 use std::io::Read;
 
 use clap::ArgMatches;
-use hyper::{self, Url};
+use hyper;
 use hyper::client::Response;
-use regex::{Captures, Regex};
 
 pub struct Client<'a> {
     args: ArgMatches<'a>,
@@ -50,48 +50,15 @@ impl<'a> Client<'a> {
     }
 
     fn build_url(&self) -> Result<String> {
-        let url_str = self.args.value_of("URL").unwrap();
+        let url = self.args.value_of("URL").unwrap();
 
         if !self.args.is_present("params") {
-            return Ok(String::from(url_str));
+            return Ok(String::from(url));
         }
 
-        let mut url = Url::parse(url_str).map_err(hyper::Error::from)?;
+        let mut builder = UrlBuilder::parse(url)?;
+        builder.add_params(self.args.values_of("params").unwrap())?;
 
-        {
-            let mut querystring = url.query_pairs_mut();
-
-            for param in self.args.values_of("params").unwrap() {
-                if let Some(captures) = get_query_param(param) {
-                    querystring.append_pair(&captures[1], &captures[2]);
-                    continue;
-                }
-
-                if let Some(body_pair) = get_body_param(param) {
-                    // TODO: Implement body parameter functionality
-                    continue;
-                }
-
-                return Err(Error::argument_error(param));
-            }
-        }
-
-        Ok(url.into_string())
+        Ok(builder.build())
     }
-}
-
-fn get_query_param(text: &str) -> Option<Captures> {
-    lazy_static! {
-        static ref RE: Regex = Regex::new("([^=]+)=([^=]+)").unwrap();
-    }
-
-    RE.captures(text)
-}
-
-fn get_body_param(text: &str) -> Option<String> {
-    lazy_static! {
-        static ref RE: Regex = Regex::new("([^=]+)==([^=]+)").unwrap();
-    }
-
-    RE.captures(text).map(|c| format!("{}={}", &c[1], &c[2]))
 }
