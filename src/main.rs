@@ -8,6 +8,14 @@ use client::Client;
 
 use clap::{Arg, App};
 
+// Shamelessly stolen from burntsushi
+macro_rules! eprintln {
+    ($($tt:tt)*) => {{
+        use std::io::Write;
+        let _ = writeln!(&mut ::std::io::stderr(), $($tt)*);
+    }}
+}
+
 fn main() {
     let matches = App::new("rural")
         .version(env!("CARGO_PKG_VERSION"))
@@ -27,6 +35,6 @@ fn main() {
 
     match client.execute() {
         Ok(output) => println!("{}", output),
-        Err(err) => println!("{}", err),
+        Err(err) => eprintln!("{}", err),
     }
 }
