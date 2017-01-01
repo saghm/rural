@@ -14,7 +14,8 @@ pub struct Error {
 
 #[derive(Debug)]
 enum ErrorKind {
-    Http(hyper::error::Error),
+    Argument(String),
+    Http(hyper::Error),
     Io(io::Error),
     Parser(clap::Error),
 }
@@ -28,6 +29,7 @@ impl fmt::Display for Error {
 impl Error {
     fn new(kind: ErrorKind) -> Self {
         let message = match kind {
+            ErrorKind::Argument(ref arg) => format!("An invalid argument was provided: {}", arg),
             ErrorKind::Http(ref err) => {
                 format!("An error occurred while making an HTTP request: {}",
                         err.description())
@@ -44,6 +46,10 @@ impl Error {
             kind: kind,
         }
     }
+
+    pub fn argument_error(arg: &str) -> Self {
+        Error::new(ErrorKind::Argument(String::from(arg)))
+    }
 }
 
 impl StdError for Error {
@@ -53,6 +59,7 @@ impl StdError for Error {
 
     fn cause(&self) -> Option<&StdError> {
         match self.kind {
+            ErrorKind::Argument(_) => None,
             ErrorKind::Http(ref err) => Some(err),
             ErrorKind::Io(ref err) => Some(err),
             ErrorKind::Parser(ref err) => Some(err),
@@ -60,8 +67,8 @@ impl StdError for Error {
     }
 }
 
-impl From<hyper::error::Error> for Error {
-    fn from(err: hyper::error::Error) -> Error {
+impl From<hyper::Error> for Error {
+    fn from(err: hyper::Error) -> Error {
         Error::new(ErrorKind::Http(err))
     }
 }

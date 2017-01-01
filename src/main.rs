@@ -1,5 +1,8 @@
 extern crate clap;
 extern crate hyper;
+#[macro_use]
+extern crate lazy_static;
+extern crate regex;
 
 mod client;
 mod error;
@@ -8,7 +11,7 @@ use client::Client;
 
 use clap::{Arg, App};
 
-// Shamelessly stolen from burntsushi
+// Shamelessly stolen from burntsushi.
 macro_rules! eprintln {
     ($($tt:tt)*) => {{
         use std::io::Write;
@@ -21,10 +24,19 @@ fn main() {
         .version(env!("CARGO_PKG_VERSION"))
         .author("Saghm Rossi <saghmrossi@gmail.com>")
         .about("Command-line HTTP client")
+        .arg(Arg::with_name("METHOD")
+            .help("HTTP request method to use")
+            .required(true)
+            .index(1)
+            .possible_values(&["get", "post"]))
         .arg(Arg::with_name("URL")
             .help("URL to request")
             .required(true)
-            .index(1))
+            .index(2))
+        .arg(Arg::with_name("params")
+            .help("Parameter for the request")
+            .index(3)
+            .multiple(true))
         .arg(Arg::with_name("headers")
             .short("d")
             .long("headers")
