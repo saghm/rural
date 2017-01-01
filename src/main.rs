@@ -1,6 +1,10 @@
 extern crate clap;
 extern crate hyper;
 
+mod error;
+
+use error::Result;
+
 use std::io::Read;
 
 use clap::{Arg, App};
