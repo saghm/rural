@@ -15,16 +15,14 @@ fn run() -> Result<()> {
         .version(env!("CARGO_PKG_VERSION"))
         .author("Saghm Rossi <saghmrossi@gmail.com>")
         .about("Command-line HTTP client")
-        .arg(Arg::with_name("url")
-            .short("u")
-            .long("url")
-            .value_name("URL")
+        .arg(Arg::with_name("URL")
             .help("URL to request")
-            .required(true))
+            .required(true)
+            .index(1))
         .get_matches();
 
     let client = Client::new();
-    let url = matches.value_of("url").unwrap();
+    let url = matches.value_of("URL").unwrap();
 
     let mut res = client.get(url).send()?;
     let mut buf = String::new();
