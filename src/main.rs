@@ -1,16 +1,14 @@
 extern crate clap;
 extern crate hyper;
 
+mod client;
 mod error;
 
-use error::Result;
-
-use std::io::Read;
+use client::Client;
 
 use clap::{Arg, App};
-use hyper::Client;
 
-fn run() -> Result<()> {
+fn main() {
     let matches = App::new("rural")
         .version(env!("CARGO_PKG_VERSION"))
         .author("Saghm Rossi <saghmrossi@gmail.com>")
@@ -25,24 +23,10 @@ fn run() -> Result<()> {
             .help("Print response headers instead of body"))
         .get_matches();
 
-    let client = Client::new();
-    let url = matches.value_of("URL").unwrap();
+    let client = Client::new(matches);
 
-    let mut res = client.get(url).send()?;
-
-    if matches.is_present("headers") {
-        println!("{}", res.headers);
-    } else {
-        let mut buf = String::new();
-        let _ = res.read_to_string(&mut buf)?;
-        println!("{}", buf);
-    }
-
-    Ok(())
-}
-
-fn main() {
-    if let Err(err) = run() {
-        println!("{}", err);
+    match client.execute() {
+        Ok(output) => println!("{}", output),
+        Err(err) => println!("{}", err),
     }
 }
