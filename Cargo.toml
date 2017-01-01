@@ -1,8 +1,8 @@
 [package]
 authors = ["Saghm Rossi <saghmrossi@gmail.com>"]
+description = "A command-line HTTP tool."
 keywords = ["http", "curl", "httpie"]
 license = "MIT"
-description = "A command-line HTTP tool."
 name = "rural"
 repository = "https://github.com/saghm/rural"
 version = "0.1.0"
