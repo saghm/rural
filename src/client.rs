@@ -23,8 +23,9 @@ impl<'a> Client<'a> {
         let method = self.args.value_of("METHOD").unwrap();
         let url = self.args.value_of("URL").unwrap();
         let params = self.args.values_of("PARAM");
+        let form = self.args.is_present("form");
 
-        let mut res = Request::new(url)?
+        let mut res = Request::new(url, form)?
             .add_params(params)?
             .build()
             .send(method, &self.http)?;

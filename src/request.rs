@@ -10,16 +10,16 @@ type Json = serde_json::Map<String, serde_json::Value>;
 
 pub struct Request<'a> {
     url: &'a str,
-    body: &'a [(String, String)],
     json: &'a Json,
+    form: bool,
 }
 
 impl<'a> Request<'a> {
-    pub fn new(url: &str) -> Result<RequestBuilder> {
+    pub fn new(url: &str, form: bool) -> Result<RequestBuilder> {
         Ok(RequestBuilder {
             url: Url::parse(url).map_err(reqwest::Error::from)?,
-            body: Vec::new(),
             json: Json::new(),
+            form: form,
         })
     }
 
@@ -35,9 +35,9 @@ impl<'a> Request<'a> {
             }
         };
 
-        builder = builder.form(&self.body);
-
-        if !self.json.is_empty() {
+        if self.form {
+            builder = builder.form(self.json);
+        } else {
             builder = builder.json(self.json);
         }
 
@@ -47,8 +47,8 @@ impl<'a> Request<'a> {
 
 pub struct RequestBuilder {
     url: Url,
-    body: Vec<(String, String)>,
     json: Json,
+    form: bool,
 }
 
 impl RequestBuilder {
@@ -75,7 +75,8 @@ impl RequestBuilder {
             } else if let Some(query_pair) = get_query_param(param) {
                 querystring.append_pair(&query_pair[1], &query_pair[2]);
             } else if let Some(body_pair) = get_body_param(param) {
-                self.body.push((String::from(&body_pair[1]), String::from(&body_pair[2])));
+                self.json.insert(String::from(&body_pair[1]),
+                                 serde_json::Value::String(String::from(&body_pair[2])));
             } else {
                 return Err(Error::argument_error(param));
             }
@@ -87,8 +88,8 @@ impl RequestBuilder {
     pub fn build(&self) -> Request {
         Request {
             url: self.url.as_str(),
-            body: &self.body,
             json: &self.json,
+            form: self.form,
         }
     }
 }
@@ -135,7 +136,7 @@ mod tests {
 
     #[test]
     fn simple_get_http() {
-        let res = Request::new("http://httpbin.org/status/200")
+        let res = Request::new("http://httpbin.org/status/200", false)
             .unwrap()
             .build()
             .send("get", &CLIENT)
@@ -146,7 +147,7 @@ mod tests {
 
     #[test]
     fn simple_get_https() {
-        let res = Request::new("https://httpbin.org/status/200")
+        let res = Request::new("https://httpbin.org/status/200", false)
             .unwrap()
             .build()
             .send("get", &CLIENT)
@@ -157,7 +158,8 @@ mod tests {
 
     #[test]
     fn get_querystring_params_http() {
-        let mut res = Request::new("http://httpbin.org/response-headers?bass=john&drums=keith")
+        let mut res = Request::new("http://httpbin.org/response-headers?bass=john&drums=keith",
+                                   false)
             .unwrap()
             .build()
             .send("get", &CLIENT)
@@ -175,7 +177,7 @@ mod tests {
 
     #[test]
     fn get_manual_params_http() {
-        let mut res = Request::new("http://httpbin.org/response-headers")
+        let mut res = Request::new("http://httpbin.org/response-headers", false)
             .unwrap()
             .add_param("bass==john")
             .unwrap()
@@ -197,7 +199,7 @@ mod tests {
 
     #[test]
     fn simple_post_http() {
-        let res = Request::new("http://httpbin.org/status/200")
+        let res = Request::new("http://httpbin.org/status/200", false)
             .unwrap()
             .build()
             .send("post", &CLIENT)
@@ -208,7 +210,7 @@ mod tests {
 
     #[test]
     fn simple_post_https() {
-        let res = Request::new("https://httpbin.org/status/200")
+        let res = Request::new("https://httpbin.org/status/200", false)
             .unwrap()
             .build()
             .send("post", &CLIENT)
@@ -218,8 +220,8 @@ mod tests {
     }
 
     #[test]
-    fn post_params_http() {
-        let mut res = Request::new("http://httpbin.org/post")
+    fn post_form_http() {
+        let mut res = Request::new("http://httpbin.org/post", true)
             .unwrap()
             .add_param("bass=john")
             .unwrap()
@@ -235,6 +237,29 @@ mod tests {
         let _ = res.read_to_string(&mut buf).unwrap();
         let outer_json: HashMap<String, serde_json::Value> = serde_json::from_str(&buf).unwrap();
         let inner_json = outer_json["form"].as_object().unwrap();
+
+        assert_eq!(inner_json["bass"].as_str(), Some("john"));
+        assert_eq!(inner_json["drums"].as_str(), Some("keith"));
+    }
+
+    #[test]
+    fn post_json_http() {
+        let mut res = Request::new("http://httpbin.org/post", false)
+            .unwrap()
+            .add_param("bass=john")
+            .unwrap()
+            .add_param("drums=keith")
+            .unwrap()
+            .build()
+            .send("post", &CLIENT)
+            .unwrap();
+
+        assert_eq!(*res.status(), StatusCode::Ok);
+
+        let mut buf = String::new();
+        let _ = res.read_to_string(&mut buf).unwrap();
+        let outer_json: HashMap<String, serde_json::Value> = serde_json::from_str(&buf).unwrap();
+        let inner_json = outer_json["json"].as_object().unwrap();
 
         assert_eq!(inner_json["bass"].as_str(), Some("john"));
         assert_eq!(inner_json["drums"].as_str(), Some("keith"));

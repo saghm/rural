@@ -40,9 +40,13 @@ fn main() {
             .index(3)
             .multiple(true))
         .arg(Arg::with_name("headers")
+            .help("Print response headers instead of body")
             .short("d")
-            .long("headers")
-            .help("Print response headers instead of body"))
+            .long("headers"))
+        .arg(Arg::with_name("form")
+            .help("Send POST data as a form rather than JSON")
+            .short("f")
+            .long("form"))
         .get_matches();
 
     let client = Client::new(matches);
