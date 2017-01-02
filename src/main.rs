@@ -1,12 +1,12 @@
 extern crate clap;
-extern crate hyper;
 #[macro_use]
 extern crate lazy_static;
 extern crate regex;
+extern crate reqwest;
 
 mod client;
 mod error;
-mod url_builder;
+mod request;
 
 use client::Client;
 
@@ -46,7 +46,7 @@ fn main() {
 
     let client = Client::new(matches);
 
-    match client.execute() {
+    match client.and_then(|c| c.execute()) {
         Ok(output) => println!("{}", output),
         Err(err) => eprintln!("{}", err),
     }

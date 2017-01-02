@@ -2,7 +2,7 @@ use std::{fmt, io, result};
 use std::error::Error as StdError;
 
 use clap;
-use hyper;
+use reqwest;
 
 pub type Result<T> = result::Result<T, Error>;
 
@@ -15,7 +15,7 @@ pub struct Error {
 #[derive(Debug)]
 enum ErrorKind {
     Argument(String),
-    Http(hyper::Error),
+    Http(reqwest::Error),
     Io(io::Error),
     Parser(clap::Error),
 }
@@ -67,8 +67,8 @@ impl StdError for Error {
     }
 }
 
-impl From<hyper::Error> for Error {
-    fn from(err: hyper::Error) -> Error {
+impl From<reqwest::Error> for Error {
+    fn from(err: reqwest::Error) -> Error {
         Error::new(ErrorKind::Http(err))
     }
 }
