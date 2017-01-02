@@ -1,0 +1,8 @@
+language: rust
+
+script:
+    - cargo build --verbose
+    - cargo test --verbose
+
+notifications:
+  email: false
