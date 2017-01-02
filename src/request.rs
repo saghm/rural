@@ -92,3 +92,124 @@ fn get_body_param(text: &str) -> Option<Captures> {
 
     RE.captures(text)
 }
+
+#[cfg(test)]
+mod tests {
+    extern crate json;
+
+    use super::Request;
+
+    use std::io::Read;
+
+    use reqwest::{Client, StatusCode};
+
+    lazy_static!{
+        static ref CLIENT: Client = Client::new().unwrap();
+    }
+
+    #[test]
+    fn simple_get_http() {
+        let res = Request::new("http://httpbin.org/status/200")
+            .unwrap()
+            .build()
+            .send("get", &CLIENT)
+            .unwrap();
+
+        assert_eq!(*res.status(), StatusCode::Ok);
+    }
+
+    #[test]
+    fn simple_get_https() {
+        let res = Request::new("https://httpbin.org/status/200")
+            .unwrap()
+            .build()
+            .send("get", &CLIENT)
+            .unwrap();
+
+        assert_eq!(*res.status(), StatusCode::Ok);
+    }
+
+    #[test]
+    fn get_querystring_params_http() {
+        let mut res = Request::new("http://httpbin.org/response-headers?bass=john&drums=keith")
+            .unwrap()
+            .build()
+            .send("get", &CLIENT)
+            .unwrap();
+
+        assert_eq!(*res.status(), StatusCode::Ok);
+
+        let mut buf = String::new();
+        let _ = res.read_to_string(&mut buf).unwrap();
+        let json = json::parse(&buf).unwrap();
+
+        assert_eq!(json["bass"], "john");
+        assert_eq!(json["drums"], "keith");
+    }
+
+    #[test]
+    fn get_manual_params_http() {
+        let mut res = Request::new("http://httpbin.org/response-headers")
+            .unwrap()
+            .add_param("bass=john")
+            .unwrap()
+            .add_param("drums=keith")
+            .unwrap()
+            .build()
+            .send("get", &CLIENT)
+            .unwrap();
+
+        assert_eq!(*res.status(), StatusCode::Ok);
+
+        let mut buf = String::new();
+        let _ = res.read_to_string(&mut buf).unwrap();
+        let json = json::parse(&buf).unwrap();
+
+        assert_eq!(json["bass"], "john");
+        assert_eq!(json["drums"], "keith");
+    }
+
+    #[test]
+    fn simple_post_http() {
+        let res = Request::new("http://httpbin.org/status/200")
+            .unwrap()
+            .build()
+            .send("post", &CLIENT)
+            .unwrap();
+
+        assert_eq!(*res.status(), StatusCode::Ok);
+    }
+
+    #[test]
+    fn simple_post_https() {
+        let res = Request::new("https://httpbin.org/status/200")
+            .unwrap()
+            .build()
+            .send("post", &CLIENT)
+            .unwrap();
+
+        assert_eq!(*res.status(), StatusCode::Ok);
+    }
+
+    #[test]
+    fn post_params_http() {
+        let mut res = Request::new("http://httpbin.org/post")
+            .unwrap()
+            .add_param("bass==john")
+            .unwrap()
+            .add_param("drums==keith")
+            .unwrap()
+            .build()
+            .send("post", &CLIENT)
+            .unwrap();
+
+        assert_eq!(*res.status(), StatusCode::Ok);
+
+        let mut buf = String::new();
+        let _ = res.read_to_string(&mut buf).unwrap();
+        let json = json::parse(&buf).unwrap();
+
+        assert_eq!(json["form"]["bass"], "john");
+        assert_eq!(json["form"]["drums"], "keith");
+    }
+}
