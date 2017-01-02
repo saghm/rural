@@ -26,15 +26,22 @@ rural --headers get http://example.com
 rural -d get http://example.com
 ```
 
-Rural supports supplying GET parameters in the querystring or by using the syntax `key=value`:
+Rural supports supplying GET parameters in the querystring or by using the syntax `key==value`:
 
 ```sh
 rural get 'http://example.com?bass=john&drums=keith'
-rural get http://example.com bass=john drums=keith
+rural get http://example.com bass==john drums==keith
 ```
 
-To supply form parameters, use the syntax `key==value`:
+To supply POST parameters, use the syntax `key=value`:
 
 ```sh
-rural post http://example.com bass==john drums==keith
+rural post http://example.com bass=john drums=keith
+```
+
+Rural defaults to sending POST parameters as JSON. To instead send them as form parameters, use `--form` (`-f` for short):
+
+```sh
+rural --form post http://example.com bass=john drums=keith
+rural -f post http://example.com bass=john drums=keith
 ```
