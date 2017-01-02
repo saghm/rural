@@ -1,5 +1,9 @@
 # rural - User-friendly command-line HTTP tool in Rust
 
+## Installation
+
+Assuming you have a reasonably recent version of Rust/Cargo installed, simply run `cargo install rural`.
+
 ## Usage
 
 Rural currently supports making GET and POST requests. To make a request, invoke rural with the request method (in lowercase) and the URL:
