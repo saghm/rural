@@ -3,6 +3,7 @@ use std::error::Error as StdError;
 
 use clap;
 use reqwest;
+use serde_json;
 
 pub type Result<T> = result::Result<T, Error>;
 
@@ -17,6 +18,7 @@ enum ErrorKind {
     Argument(String),
     Http(reqwest::Error),
     Io(io::Error),
+    Json(serde_json::Error),
     Parser(clap::Error),
 }
 
@@ -35,6 +37,10 @@ impl Error {
                         err.description())
             }
             ErrorKind::Io(ref err) => format!("An I/O error occured: {}", err.description()),
+            ErrorKind::Json(ref err) => {
+                format!("An error occurred while parsing a JSON argument: {}",
+                        err.description())
+            }
             ErrorKind::Parser(ref err) => {
                 format!("An error occurred while parsing the command-line arguments: {}",
                         err.description())
@@ -62,14 +68,15 @@ impl StdError for Error {
             ErrorKind::Argument(_) => None,
             ErrorKind::Http(ref err) => Some(err),
             ErrorKind::Io(ref err) => Some(err),
+            ErrorKind::Json(ref err) => Some(err),
             ErrorKind::Parser(ref err) => Some(err),
         }
     }
 }
 
-impl From<reqwest::Error> for Error {
-    fn from(err: reqwest::Error) -> Error {
-        Error::new(ErrorKind::Http(err))
+impl From<clap::Error> for Error {
+    fn from(err: clap::Error) -> Error {
+        Error::new(ErrorKind::Parser(err))
     }
 }
 
@@ -79,8 +86,14 @@ impl From<io::Error> for Error {
     }
 }
 
-impl From<clap::Error> for Error {
-    fn from(err: clap::Error) -> Error {
-        Error::new(ErrorKind::Parser(err))
+impl From<serde_json::Error> for Error {
+    fn from(err: serde_json::Error) -> Error {
+        Error::new(ErrorKind::Json(err))
+    }
+}
+
+impl From<reqwest::Error> for Error {
+    fn from(err: reqwest::Error) -> Error {
+        Error::new(ErrorKind::Http(err))
     }
 }

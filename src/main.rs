@@ -3,6 +3,7 @@ extern crate clap;
 extern crate lazy_static;
 extern crate regex;
 extern crate reqwest;
+extern crate serde_json;
 
 mod client;
 mod error;
