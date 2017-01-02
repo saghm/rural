@@ -1,8 +1,8 @@
 use error::{Error, Result};
 
 use clap::Values;
-use reqwest::{self, Url};
-use reqwest::{Client, Response};
+use reqwest::{self, Client, Response, Url};
+use reqwest::header::Headers;
 use regex::{Captures, Regex};
 use serde_json;
 
@@ -11,6 +11,7 @@ type Json = serde_json::Map<String, serde_json::Value>;
 pub struct Request<'a> {
     url: &'a str,
     json: &'a Json,
+    headers: &'a Headers,
     form: bool,
 }
 
@@ -19,6 +20,7 @@ impl<'a> Request<'a> {
         Ok(RequestBuilder {
             url: Url::parse(url).map_err(reqwest::Error::from)?,
             json: Json::new(),
+            headers: Headers::new(),
             form: form,
         })
     }
@@ -41,7 +43,7 @@ impl<'a> Request<'a> {
             builder = builder.json(self.json);
         }
 
-        builder.send().map_err(Error::from)
+        builder.headers(self.headers.clone()).send().map_err(Error::from)
     }
 }
 
@@ -49,6 +51,7 @@ pub struct RequestBuilder {
     url: Url,
     json: Json,
     form: bool,
+    headers: Headers,
 }
 
 impl RequestBuilder {
@@ -74,6 +77,9 @@ impl RequestBuilder {
                 self.json.insert(String::from(&json_pair[1]), json_value);
             } else if let Some(query_pair) = get_query_param(param) {
                 querystring.append_pair(&query_pair[1], &query_pair[2]);
+            } else if let Some(header_pair) = get_header(param) {
+                self.headers.set_raw(String::from(&header_pair[1]),
+                                     vec![(&header_pair[2]).as_bytes().to_vec()]);
             } else if let Some(body_pair) = get_body_param(param) {
                 self.json.insert(String::from(&body_pair[1]),
                                  serde_json::Value::String(String::from(&body_pair[2])));
@@ -89,6 +95,7 @@ impl RequestBuilder {
         Request {
             url: self.url.as_str(),
             json: &self.json,
+            headers: &self.headers,
             form: self.form,
         }
     }
@@ -102,9 +109,9 @@ fn get_body_param(text: &str) -> Option<Captures> {
     RE.captures(text)
 }
 
-fn get_query_param(text: &str) -> Option<Captures> {
+fn get_header(text: &str) -> Option<Captures> {
     lazy_static! {
-        static ref RE: Regex = Regex::new("(.*)==(.+)").unwrap();
+        static ref RE: Regex = Regex::new("(.*):(.+)").unwrap();
     }
 
     RE.captures(text)
@@ -118,6 +125,13 @@ fn get_json_param(text: &str) -> Option<Captures> {
     RE.captures(text)
 }
 
+fn get_query_param(text: &str) -> Option<Captures> {
+    lazy_static! {
+        static ref RE: Regex = Regex::new("(.*)==(.+)").unwrap();
+    }
+
+    RE.captures(text)
+}
 
 #[cfg(test)]
 mod tests {
@@ -125,7 +139,6 @@ mod tests {
 
     use std::collections::HashMap;
     use std::io::Read;
-
 
     use reqwest::{Client, StatusCode};
     use serde_json;
@@ -263,5 +276,113 @@ mod tests {
 
         assert_eq!(inner_json["bass"].as_str(), Some("john"));
         assert_eq!(inner_json["drums"].as_str(), Some("keith"));
+    }
+
+    #[test]
+    fn simple_headers() {
+        let mut res = Request::new("http://httpbin.org/headers", false)
+            .unwrap()
+            .add_param("bass:john")
+            .unwrap()
+            .add_param("drums:keith")
+            .unwrap()
+            .build()
+            .send("get", &CLIENT)
+            .unwrap();
+
+        assert_eq!(*res.status(), StatusCode::Ok);
+
+        let mut buf = String::new();
+        let _ = res.read_to_string(&mut buf).unwrap();
+        let json: HashMap<String, serde_json::Value> = serde_json::from_str(&buf).unwrap();
+        let headers = json["headers"].as_object().unwrap();
+
+        assert_eq!(headers["Bass"].as_str(), Some("john"));
+        assert_eq!(headers["Drums"].as_str(), Some("keith"));
+    }
+
+    #[test]
+    fn mixed_json() {
+        let mut res = Request::new("http://httpbin.org/post", false)
+            .unwrap()
+            .add_param("bass=john")
+            .unwrap()
+            .add_param("drums=keith")
+            .unwrap()
+            .add_param("others:=[\"pete\", \"roger\"]")
+            .unwrap()
+            .add_param("band==the who")
+            .unwrap()
+            .add_param("song==bargain")
+            .unwrap()
+            .add_param("keyboard:the rabbit")
+            .unwrap()
+            .add_param("keyboard-also:pete")
+            .unwrap()
+            .build()
+            .send("post", &CLIENT)
+            .unwrap();
+
+        assert_eq!(*res.status(), StatusCode::Ok);
+
+        let mut buf = String::new();
+        let _ = res.read_to_string(&mut buf).unwrap();
+        let outer_json: HashMap<String, serde_json::Value> = serde_json::from_str(&buf).unwrap();
+
+        let args = outer_json["args"].as_object().unwrap();
+        assert_eq!(args["band"].as_str(), Some("the who"));
+        assert_eq!(args["song"].as_str(), Some("bargain"));
+
+        let inner_json = outer_json["json"].as_object().unwrap();
+        assert_eq!(inner_json["bass"].as_str(), Some("john"));
+        assert_eq!(inner_json["drums"].as_str(), Some("keith"));
+
+        let others = inner_json["others"].as_array().unwrap();
+        assert_eq!(others.len(), 2);
+        assert_eq!(others[0].as_str(), Some("pete"));
+        assert_eq!(others[1].as_str(), Some("roger"));
+
+        let headers = outer_json["headers"].as_object().unwrap();
+        assert_eq!(headers["Keyboard"].as_str(), Some("the rabbit"));
+        assert_eq!(headers["Keyboard-Also"].as_str(), Some("pete"));
+    }
+
+    #[test]
+    fn mixed_form() {
+        let mut res = Request::new("http://httpbin.org/post", true)
+            .unwrap()
+            .add_param("bass=john")
+            .unwrap()
+            .add_param("drums=keith")
+            .unwrap()
+            .add_param("band==the who")
+            .unwrap()
+            .add_param("song==bargain")
+            .unwrap()
+            .add_param("keyboard:the rabbit")
+            .unwrap()
+            .add_param("keyboard-also:pete")
+            .unwrap()
+            .build()
+            .send("post", &CLIENT)
+            .unwrap();
+
+        assert_eq!(*res.status(), StatusCode::Ok);
+
+        let mut buf = String::new();
+        let _ = res.read_to_string(&mut buf).unwrap();
+        let outer_json: HashMap<String, serde_json::Value> = serde_json::from_str(&buf).unwrap();
+
+        let args = outer_json["args"].as_object().unwrap();
+        assert_eq!(args["band"].as_str(), Some("the who"));
+        assert_eq!(args["song"].as_str(), Some("bargain"));
+
+        let inner_json = outer_json["form"].as_object().unwrap();
+        assert_eq!(inner_json["bass"].as_str(), Some("john"));
+        assert_eq!(inner_json["drums"].as_str(), Some("keith"));
+
+        let headers = outer_json["headers"].as_object().unwrap();
+        assert_eq!(headers["Keyboard"].as_str(), Some("the rabbit"));
+        assert_eq!(headers["Keyboard-Also"].as_str(), Some("pete"));
     }
 }

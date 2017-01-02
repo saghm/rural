@@ -51,3 +51,9 @@ POST parameters can also be sent using literal JSON rather than plaintext. To do
 ```sh
 rural post http://example.com who:='{ "bass": "john", "drums": "keith", "others": ["pete", "roger"] }'
 ```
+
+HTTP headers (either standard or custom) can be provided using the syntax `name:value`:
+
+```sh
+rural get http://example.com bass:john drums:keith
+```
