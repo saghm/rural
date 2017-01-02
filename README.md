@@ -13,7 +13,7 @@ rural get http://example.com
 rural post http://example.com
 ```
 
-Rural supports HTTPS requests if OpenSSL is installed:
+Rural requires OpenSSL to make HTTPS requests:
 
 ```sh
 rural get https://example.com
@@ -44,4 +44,10 @@ Rural defaults to sending POST parameters as JSON. To instead send them as form 
 ```sh
 rural --form post http://example.com bass=john drums=keith
 rural -f post http://example.com bass=john drums=keith
+```
+
+POST parameters can also be sent using literal JSON rather than plaintext. To do this, use the syntax `key:=value` (note that JSON values will generally have to be wrapped in quotes due to how most shells interpret some of the characters, as shown below):
+
+```sh
+rural post http://example.com who:='{ "bass": "john", "drums": "keith", "others": ["pete", "roger"] }'
 ```
