@@ -22,7 +22,7 @@ impl<'a> Client<'a> {
     pub fn execute(&self) -> Result<String> {
         let method = self.args.value_of("METHOD").unwrap();
         let url = self.args.value_of("URL").unwrap();
-        let params = self.args.values_of("params");
+        let params = self.args.values_of("PARAM");
 
         let mut res = Request::new(url)?
             .add_params(params)?
