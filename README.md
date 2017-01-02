@@ -1,3 +1,5 @@
+[![crates.io](https://img.shields.io/crates/v/rural.svg)](https://crates.io/crates/rural) [![Build Status](https://travis-ci.org/saghm/rural.svg)](https://travis-ci.org/saghm/rural)
+
 # rural - User-friendly command-line HTTP tool in Rust
 
 ## Installation
