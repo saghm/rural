@@ -1,6 +1,6 @@
 [package]
 authors = ["Saghm Rossi <saghmrossi@gmail.com>"]
-description = "A command-line HTTP tool."
+description = "User-friendly command-line HTTP tool."
 keywords = ["http", "curl", "httpie"]
 license = "MIT"
 name = "rural"
