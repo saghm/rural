@@ -36,7 +36,8 @@ fn main() {
             .required(true)
             .index(2))
         .arg(Arg::with_name("PARAM")
-            .help("querystring parameter (i.e `key=value`) or body parameter (i.e `key==value`")
+            .help("querystring parameter (i.e `key==value`), body parameter (i.e `key=value)`, \
+                   or json parameter (i.e. `key:=value`)")
             .index(3)
             .multiple(true))
         .arg(Arg::with_name("headers")
