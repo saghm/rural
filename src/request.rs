@@ -53,20 +53,20 @@ impl RequestBuilder {
         Ok(self)
     }
 
-    fn add_param(&mut self, param: &str) -> Result<()> {
-        let mut querystring = self.url.query_pairs_mut();
+    fn add_param(&mut self, param: &str) -> Result<&mut Self> {
+        {
+            let mut querystring = self.url.query_pairs_mut();
 
-        if let Some(query_pair) = get_query_param(param) {
-            querystring.append_pair(&query_pair[1], &query_pair[2]);
-            return Ok(());
+            if let Some(query_pair) = get_query_param(param) {
+                querystring.append_pair(&query_pair[1], &query_pair[2]);
+            } else if let Some(body_pair) = get_body_param(param) {
+                self.body.push((String::from(&body_pair[1]), String::from(&body_pair[2])));
+            } else {
+                return Err(Error::argument_error(param));
+            }
         }
 
-        if let Some(body_pair) = get_body_param(param) {
-            self.body.push((String::from(&body_pair[1]), String::from(&body_pair[2])));
-            return Ok(());
-        }
-
-        Err(Error::argument_error(param))
+        Ok(self)
     }
 
     pub fn build(&self) -> Request {
