@@ -24,7 +24,7 @@ macro_rules! eprintln {
 fn main() {
     let matches = App::new("rural")
         .version(env!("CARGO_PKG_VERSION"))
-        .author("Saghm Rossi <saghmrossi@gmail.com>")
+        .author("https://github.com/saghm/rural")
         .about("Command-line HTTP client")
         .arg(Arg::with_name("METHOD")
             .help("HTTP request method to use")
