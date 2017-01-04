@@ -35,14 +35,19 @@ impl<'a> Client<'a> {
 
         if self.args.is_present("headers") || self.args.is_present("both") ||
            self.args.value_of("METHOD").unwrap() == "head" {
-            buf.push_str(&format!("{} {}\n\n{}", res.version(), res.status(), res.headers()));
+
+            if !self.args.is_present("suppress-info") {
+                buf.push_str(&format!("{} {}\n\n", res.version(), res.status()));
+            }
+
+            buf.push_str(&format!("{}", res.headers()));
         }
 
         if !self.args.is_present("headers") {
             if !buf.is_empty() {
                 buf.push('\n')
             }
-            
+
             let _ = res.read_to_string(&mut buf)?;
         }
 
