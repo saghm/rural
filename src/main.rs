@@ -11,7 +11,7 @@ mod request;
 
 use client::Client;
 
-use clap::{Arg, App};
+use clap::{App, Arg, ArgGroup};
 
 // Shamelessly stolen from burntsushi (okay, maybe with a *little* shame).
 macro_rules! eprintln {
@@ -44,16 +44,17 @@ fn main() {
             .help("Print response headers instead of body")
             .short("d")
             .long("headers"))
-        .arg(Arg::with_name("suppress-info")
-             .help("Do not print the HTTP version and response status code")
-             .short("s")
-             .long("suppress-info")
-             .requires("headers"))
         .arg(Arg::with_name("both")
             .help("Print both response headers and body")
             .conflicts_with("headers")
             .short("b")
             .long("both"))
+        .arg(Arg::with_name("suppress-info")
+            .help("Do not print the HTTP version and response status code")
+            .short("s")
+            .long("suppress-info")
+            .requires("headers-printed"))
+        .group(ArgGroup::with_name("headers-printed").args(&["headers", "both"]))
         .arg(Arg::with_name("form")
             .help("Send POST data as a form rather than JSON")
             .short("f")
