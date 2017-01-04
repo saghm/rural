@@ -7,7 +7,7 @@ keywords = ["http", "curl", "httpie"]
 license = "MIT"
 name = "rural"
 repository = "https://github.com/saghm/rural"
-version = "0.3.0"
+version = "0.4.0"
 
 [dependencies]
 clap = "2.19.3"
