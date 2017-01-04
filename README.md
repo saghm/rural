@@ -8,6 +8,8 @@ Assuming you have a reasonably recent version of Rust/Cargo installed, simply ru
 
 ## Usage
 
+### Method types
+
 Rural currently supports making GET, POST, PUT, DELETE, HEAD, OPTIONS, and PATCH requests. To make a request, invoke rural with the request method (in lowercase) and the URL:
 
 ```sh
@@ -20,11 +22,15 @@ rural options http://example.com
 rural patch http://example.com
 ```
 
+### HTTPS
+
 Rural requires OpenSSL to make HTTPS requests:
 
 ```sh
 rural get https://example.com
 ```
+
+### Output
 
 To see the response headers instead of the body, use the `--headers` flag (`-d` for short):
 
@@ -46,6 +52,15 @@ To print both the reponse headers and the body, use the `--both` flag (`-b` for 
 rural --both get http://example.com
 rural -b get http://example.com
 ```
+
+`--suppress-info` works for `--both` as well:
+
+```sh
+rural --both --suppress-info get http://example.com
+rural -bs get http://example.com
+```
+
+### Parameters
 
 Rural supports supplying GET parameters in the querystring or by using the syntax `key==value`:
 
@@ -79,6 +94,8 @@ Note that body parameters can also be specified for other types of requests besi
 rural put http://example.com bass=john
 rural delete http://example.com drums=keith
 ```
+
+### Headers
 
 HTTP headers (either standard or custom) can be provided using the syntax `name:value`:
 
