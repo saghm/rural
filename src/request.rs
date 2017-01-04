@@ -37,7 +37,7 @@ impl<'a> Request<'a> {
 
             // clap shouldn't allow invalid values, so this must be a bug.
             _ => {
-                panic!("This shouldn't be possible! Please file an issue with the exact command \
+                panic!("An unexpected error occured! Please file an issue with the exact command \
                         you ran here: https://github.com/saghm/rural/issues/new")
             }
         };
