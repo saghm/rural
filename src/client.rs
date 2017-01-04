@@ -31,15 +31,21 @@ impl<'a> Client<'a> {
             .build()
             .send(method, &self.http)?;
 
-        let output = if self.args.is_present("headers") ||
-                        self.args.value_of("METHOD").unwrap() == "head" {
-            format!("{}", res.headers())
-        } else {
-            let mut buf = String::new();
-            let _ = res.read_to_string(&mut buf)?;
-            buf
-        };
+        let mut buf = String::new();
 
-        Ok(output)
+        if self.args.is_present("headers") || self.args.is_present("both") ||
+           self.args.value_of("METHOD").unwrap() == "head" {
+            buf.push_str(&format!("{} {}\n\n{}", res.version(), res.status(), res.headers()));
+        }
+
+        if !self.args.is_present("headers") {
+            if !buf.is_empty() {
+                buf.push('\n')
+            }
+            
+            let _ = res.read_to_string(&mut buf)?;
+        }
+
+        Ok(buf)
     }
 }
