@@ -19,6 +19,7 @@ impl<'a> Client<'a> {
         })
     }
 
+    // Unwraps are okay because clap guarantees that the required arguments are present.
     pub fn execute(&self) -> Result<String> {
         let method = self.args.value_of("METHOD").unwrap();
         let url = self.args.value_of("URL").unwrap();
@@ -30,7 +31,8 @@ impl<'a> Client<'a> {
             .build()
             .send(method, &self.http)?;
 
-        let output = if self.args.is_present("headers") {
+        let output = if self.args.is_present("headers") ||
+                        self.args.value_of("METHOD").unwrap() == "head" {
             format!("{}", res.headers())
         } else {
             let mut buf = String::new();

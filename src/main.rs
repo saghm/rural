@@ -30,7 +30,7 @@ fn main() {
             .help("HTTP request method to use")
             .required(true)
             .index(1)
-            .possible_values(&["get", "post"]))
+            .possible_values(&["delete", "get", "head", "options", "patch", "post", "put"]))
         .arg(Arg::with_name("URL")
             .help("URL to request")
             .required(true)
