@@ -71,6 +71,8 @@ rural --no-color http://example.com
 rural -n http://example.com
 ```
 
+NOTE: The library used to colorize the JSON uses ANSI color escape sequences, which will *not* work correctly on Windows. Because of this, rural disabled colorized output on Windows.
+
 ### Parameters
 
 Rural supports supplying GET parameters in the querystring or by using the syntax `key==value`:
