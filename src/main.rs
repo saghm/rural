@@ -1,4 +1,5 @@
 extern crate clap;
+extern crate json_color;
 #[macro_use]
 extern crate lazy_static;
 extern crate regex;
@@ -55,6 +56,11 @@ fn main() {
             .long("suppress-info")
             .requires("headers-printed"))
         .group(ArgGroup::with_name("headers-printed").args(&["headers", "both"]))
+        .arg(Arg::with_name("no-color")
+             .help("Do not colorize the response body")
+             .conflicts_with("headers")
+             .short("n")
+             .long("no-headers"))
         .arg(Arg::with_name("form")
             .help("Send POST data as a form rather than JSON")
             .short("f")

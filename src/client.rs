@@ -4,18 +4,18 @@ use request::Request;
 use std::io::Read;
 
 use clap::ArgMatches;
-use reqwest;
+use json_color::colorize_json_str;
 
 pub struct Client<'a> {
     args: ArgMatches<'a>,
-    http: reqwest::Client,
+    http: ::reqwest::Client,
 }
 
 impl<'a> Client<'a> {
     pub fn new(args: ArgMatches<'a>) -> Result<Self> {
         Ok(Client {
             args: args,
-            http: reqwest::Client::new()?,
+            http: ::reqwest::Client::new()?,
         })
     }
 
@@ -48,7 +48,16 @@ impl<'a> Client<'a> {
                 buf.push('\n')
             }
 
-            let _ = res.read_to_string(&mut buf)?;
+            let mut body = String::new();
+            let _ = res.read_to_string(&mut body)?;
+
+            if !cfg!(target_os = "windows") && !self.args.is_present("no-color") {
+                if let Ok(colored_json) = colorize_json_str(&body) {
+                    body = colored_json;
+                }
+            }
+
+            buf.push_str(&body);
         }
 
         Ok(buf)
