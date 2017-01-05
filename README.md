@@ -64,7 +64,7 @@ rural -bs get http://example.com
 
 #### Colors
 
-By default, rural will colorize any JSON in the response body. To suppress this, use the `--no-color` flag (`-n` for short):
+By default, rural will colorize the response headers, the HTTP info string, and any JSON in the response body. To suppress this, use the `--no-color` flag (`-n` for short):
 
 ```sh
 rural --no-color http://example.com
