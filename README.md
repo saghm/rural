@@ -32,6 +32,8 @@ rural get https://example.com
 
 ### Output
 
+#### Sections
+
 To see the response headers instead of the body, use the `--headers` flag (`-d` for short):
 
 ```sh
@@ -58,6 +60,15 @@ rural -b get http://example.com
 ```sh
 rural --both --suppress-info get http://example.com
 rural -bs get http://example.com
+```
+
+#### Colors
+
+By default, rural will colorize any JSON in the response body. To suppress this, use the `--no-color` flag (`-n` for short):
+
+```sh
+rural --no-color http://example.com
+rural -n http://example.com
 ```
 
 ### Parameters
