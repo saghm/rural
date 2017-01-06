@@ -5,11 +5,12 @@ use std::io::Read;
 
 use clap::ArgMatches;
 use colored::Colorize;
-use json_color::colorize_json_str;
+use json_color::Colorizer;
 
 pub struct Client<'a> {
     args: ArgMatches<'a>,
     http: ::reqwest::Client,
+    colorizer: Colorizer,
 }
 
 impl<'a> Client<'a> {
@@ -17,6 +18,7 @@ impl<'a> Client<'a> {
         Ok(Client {
             args: args,
             http: ::reqwest::Client::new()?,
+            colorizer: Colorizer::arbitrary(),
         })
     }
 
@@ -74,7 +76,7 @@ impl<'a> Client<'a> {
             let _ = res.read_to_string(&mut body)?;
 
             if !cfg!(target_os = "windows") && !self.args.is_present("no-color") {
-                if let Ok(colored_json) = colorize_json_str(&body) {
+                if let Ok(colored_json) = self.colorizer.colorize_json_str(&body) {
                     body = colored_json;
                 }
             }
