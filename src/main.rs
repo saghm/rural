@@ -65,6 +65,12 @@ fn main() {
             .help("Send POST data as a form rather than JSON")
             .short("f")
             .long("form"))
+        .arg(Arg::with_name("out")
+             .help("Download output to specified file")
+             .short("-o")
+             .long("--out")
+             .takes_value(true)
+             .value_name("OUT"))
         .get_matches();
 
     let client = Client::new(matches);

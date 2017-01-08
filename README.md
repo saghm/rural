@@ -62,6 +62,15 @@ rural --both --suppress-info get http://example.com
 rural -bs get http://example.com
 ```
 
+#### Output file
+
+To save the response body to a file, use the `--out` argument with the desired output file name (`-o` for short):
+
+```sh
+rural get http://example.com --out output.json
+rural get http://example.com -o output.html
+```
+
 #### Colors
 
 By default, rural will colorize the response headers, the HTTP info string, and any JSON in the response body. To suppress this, use the `--no-color` flag (`-n` for short):

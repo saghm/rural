@@ -1,7 +1,8 @@
 use error::Result;
 use request::Request;
 
-use std::io::Read;
+use std::fs::OpenOptions;
+use std::io::{Read, Write};
 
 use clap::ArgMatches;
 use colored::Colorize;
@@ -37,12 +38,13 @@ impl<'a> Client<'a> {
         let mut buf = String::new();
 
         if self.args.is_present("headers") || self.args.is_present("both") ||
+           self.args.is_present("out") ||
            self.args.value_of("METHOD").unwrap() == "head" {
 
             if !self.args.is_present("suppress-info") {
                 let mut version = format!("{}", res.version());
                 let mut status = format!("{}", res.status());
-                
+
                 if !cfg!(target_os = "windows") && !self.args.is_present("no-color") {
                     version = version.blue().to_string();
                     status = status.cyan().to_string();
@@ -66,8 +68,13 @@ impl<'a> Client<'a> {
             }
         }
 
+        if let Some(file_name) = self.args.value_of("out") {
+            let mut body = String::new();
+            let _ = res.read_to_string(&mut body)?;
 
-        if !self.args.is_present("headers") {
+            let mut file = OpenOptions::new().write(true).create(true).open(file_name)?;
+            write!(file, "{}", body)?;
+        } else if !self.args.is_present("headers") {
             if !buf.is_empty() {
                 buf.push_str("\n\n");
             }
