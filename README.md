@@ -2,9 +2,25 @@
 
 # rural - User-friendly command-line HTTP tool in Rust
 
+## Why rural?
+
+Most developers tend to use `curl` when they need to make HTTP requests from the command line. In terms of speed and breadth of features, curl pretty much has it all. However, in terms of the command-line API, curl can sometimes leave something to be desired. For example, the `-G` or `--get` flag can be used to make a GET request, but there is no `--post` option, and `-P` is used to instruct the server to connect to an open FTP port instead of sending the reponse back directly.
+
+One alternative to using `curl` for command-line HTTP requests is HTTPie. HTTPie has an excellent command-line API, including some superb syntatic sugar for various parameter types and headers. However, being written in Python, HTTPie is quite a bit slower than curl.
+
+Rural aims to provide the ease-of-use of HTTPie at a speed comparable to that of curl. To that end, rural purposely implements a similar API to HTTPie, including the syntatic sugar for parameters and headers.
+
+## Status
+
+Rural currently implements most of the common features needed for making HTTP requests in the command line. However, many less common features have not been implemented. (A brief look at `man curl` shows just how much functionality there is to include). If there's a feature you'd like to be implemented, feel free to [open an issue](https://github.com/saghm/rural/issues), or even better, a [pull request](https://github.com/saghm/rural/pulls)! Contributions are always quite welcome.
+
+To date, no specific optimization has been done on rural. From a set of extremely unscientific tests, rural currently runs at the same order of magnitude as curl in terms of speed (which is an order of magnitude faster than HTTPie).
+
 ## Installation
 
-Assuming you have a reasonably recent version of Rust/Cargo installed, simply run `cargo install rural`.
+If you don't already have Rust installed, you can get the Rust toolchain installer [here](https://rustup.rs/).
+
+Once Rust is installed, run `cargo install rural`. Make sure you add `$HOME/.cargo/bin` to your PATH if you instructed rustup not to do so itself.
 
 ## Usage
 
@@ -80,7 +96,7 @@ rural --no-color http://example.com
 rural -n http://example.com
 ```
 
-NOTE: The library used to colorize the JSON uses ANSI color escape sequences, which will *not* work correctly on Windows. Because of this, rural disabled colorized output on Windows.
+NOTE: The library used to colorize the JSON uses ANSI color escape sequences, which will *not* work correctly on Windows. Because of this, rural disables colorized output on Windows.
 
 ### Parameters
 
@@ -124,3 +140,7 @@ HTTP headers (either standard or custom) can be provided using the syntax `name:
 ```sh
 rural get http://example.com bass:john drums:keith
 ```
+
+## License
+
+Rural is licensed under the MIT LICENSE.
