@@ -10,10 +10,10 @@ repository = "https://github.com/saghm/rural"
 version = "0.6.1"
 
 [dependencies]
-clap = "2.20.0"
+clap = "2.20.5"
 colored = "1.4.0"
 json-color = "0.3.0"
 lazy_static = "0.2.2"
 regex = "0.2.1"
-reqwest = "0.2.0"
-serde_json = "0.8.4"
+reqwest = "0.4.0"
+serde_json = "0.9.7"
