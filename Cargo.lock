@@ -1,6 +1,6 @@
 [root]
 name = "rural"
-version = "0.6.2"
+version = "0.6.3"
 dependencies = [
  "clap 2.20.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "colored 1.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
