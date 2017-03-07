@@ -11,9 +11,9 @@ version = "0.6.2"
 
 [dependencies]
 clap = "2.20.5"
-colored = "1.4.0"
-json-color = "0.3.0"
-lazy_static = "0.2.2"
+colored = "1.4.1"
+json-color = "0.4.0"
+lazy_static = "0.2.4"
 regex = "0.2.1"
 reqwest = "0.4.0"
-serde_json = "0.9.7"
+serde_json = "0.9.9"
