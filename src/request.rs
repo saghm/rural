@@ -18,11 +18,11 @@ pub struct Request<'a> {
 impl<'a> Request<'a> {
     pub fn new(url: &str, form: bool) -> Result<RequestBuilder> {
         Ok(RequestBuilder {
-            url: Url::parse(url).map_err(reqwest::Error::from)?,
-            json: Json::new(),
-            headers: Headers::new(),
-            form: form,
-        })
+               url: Url::parse(url).map_err(reqwest::Error::from)?,
+               json: Json::new(),
+               headers: Headers::new(),
+               form: form,
+           })
     }
 
     pub fn send(&self, method: &str, client: &Client) -> Result<Response> {
@@ -61,14 +61,11 @@ pub struct RequestBuilder {
 
 impl RequestBuilder {
     pub fn add_params(&mut self, values: Option<Values>) -> Result<&mut Self> {
-        match values {
-            Some(vals) => {
-                for param in vals {
-                    self.add_param(param)?;
-                }
+        if let Some(vals) = values {
+            for param in vals {
+                self.add_param(param)?;
             }
-            None => {}
-        };
+        }
 
         Ok(self)
     }
@@ -179,10 +176,10 @@ mod tests {
     fn get_querystring_params() {
         let mut res = Request::new("http://httpbin.org/response-headers?bass=john&drums=keith",
                                    false)
-            .unwrap()
-            .build()
-            .send("get", &CLIENT)
-            .unwrap();
+                .unwrap()
+                .build()
+                .send("get", &CLIENT)
+                .unwrap();
 
         assert_eq!(*res.status(), StatusCode::Ok);
 
@@ -606,10 +603,10 @@ mod tests {
     fn head() {
         let mut res = Request::new("http://httpbin.org/response-headers?bass=john&drums=keith",
                                    false)
-            .unwrap()
-            .build()
-            .send("head", &CLIENT)
-            .unwrap();
+                .unwrap()
+                .build()
+                .send("head", &CLIENT)
+                .unwrap();
 
         assert_eq!(*res.status(), StatusCode::Ok);
 
@@ -622,10 +619,10 @@ mod tests {
     fn options() {
         let mut res = Request::new("http://httpbin.org/response-headers?bass=john&drums=keith",
                                    false)
-            .unwrap()
-            .build()
-            .send("options", &CLIENT)
-            .unwrap();
+                .unwrap()
+                .build()
+                .send("options", &CLIENT)
+                .unwrap();
 
         assert_eq!(*res.status(), StatusCode::Ok);
 
@@ -640,3 +637,4 @@ mod tests {
         assert!(allowed_methods.contains(&Method::Options));
     }
 }
+
