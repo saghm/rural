@@ -12,7 +12,7 @@ version = "0.6.3"
 [dependencies]
 clap = "2.20.5"
 colored = "1.4.1"
-json-color = "0.4.0"
+json-color = "0.5.0"
 lazy_static = "0.2.4"
 regex = "0.2.1"
 reqwest = "0.4.0"
