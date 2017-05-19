@@ -1,7 +1,7 @@
 use error::{Error, Result};
 
 use clap::Values;
-use reqwest::{self, Client, Method, Response, Url};
+use reqwest::{Client, Method, Response, Url};
 use reqwest::header::Headers;
 use regex::{Captures, Regex};
 use serde_json;
@@ -18,7 +18,7 @@ pub struct Request<'a> {
 impl<'a> Request<'a> {
     pub fn new(url: &str, form: bool) -> Result<RequestBuilder> {
         Ok(RequestBuilder {
-               url: Url::parse(url).map_err(reqwest::Error::from)?,
+               url: Url::parse(url).map_err(Error::from)?,
                json: Json::new(),
                headers: Headers::new(),
                form: form,

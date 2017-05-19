@@ -2,7 +2,7 @@ use std::{fmt, io, result};
 use std::error::Error as StdError;
 
 use clap;
-use reqwest;
+use reqwest::{self, UrlError};
 use serde_json;
 
 pub type Result<T> = result::Result<T, Error>;
@@ -20,6 +20,7 @@ enum ErrorKind {
     Io(io::Error),
     Json(serde_json::Error),
     Parser(clap::Error),
+    Url(UrlError),
 }
 
 impl fmt::Display for Error {
@@ -44,6 +45,10 @@ impl Error {
             ErrorKind::Parser(ref err) => {
                 format!("An error occurred while parsing the command-line arguments: {}",
                         err.description())
+            }
+            ErrorKind::Url(ref err) => {
+                format!("An error occurred while parsing the URL: {}", err.description())
+
             }
         };
 
@@ -70,6 +75,7 @@ impl StdError for Error {
             ErrorKind::Io(ref err) => Some(err),
             ErrorKind::Json(ref err) => Some(err),
             ErrorKind::Parser(ref err) => Some(err),
+            ErrorKind::Url(ref err) => Some(err),
         }
     }
 }
@@ -95,5 +101,11 @@ impl From<serde_json::Error> for Error {
 impl From<reqwest::Error> for Error {
     fn from(err: reqwest::Error) -> Error {
         Error::new(ErrorKind::Http(err))
+    }
+}
+
+impl From<UrlError> for Error {
+    fn from(err: UrlError) -> Error {
+        Error::new(ErrorKind::Url(err))
     }
 }
