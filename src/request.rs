@@ -631,10 +631,11 @@ mod tests {
         assert!(buf.is_empty());
 
         let ref allowed_methods = res.headers().get::<Allow>().unwrap().0;
-        assert_eq!(allowed_methods.len(), 3);
+        assert_eq!(allowed_methods.len(), 4);
         assert!(allowed_methods.contains(&Method::Get));
         assert!(allowed_methods.contains(&Method::Head));
         assert!(allowed_methods.contains(&Method::Options));
+        assert!(allowed_methods.contains(&Method::Post));
     }
 }
 
