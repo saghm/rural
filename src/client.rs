@@ -79,8 +79,9 @@ impl<'a> Client<'a> {
                 buf.push_str("\n\n");
             }
 
-            let mut body = String::new();
-            let _ = res.read_to_string(&mut body)?;
+            let mut bytes = Vec::new();
+            let _ = res.read_to_end(&mut bytes)?;
+            let mut body = String::from_utf8_lossy(&bytes).into_owned();
 
             if !cfg!(target_os = "windows") && !self.args.is_present("no-color") {
                 if let Ok(colored_json) = self.colorizer.colorize_json_str(&body) {
