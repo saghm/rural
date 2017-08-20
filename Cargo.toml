@@ -6,6 +6,7 @@ homepage = "https://github.com/saghm/rural"
 keywords = ["http", "curl", "httpie"]
 license = "MIT"
 name = "rural"
+readme = "README.md"
 repository = "https://github.com/saghm/rural"
 version = "0.7.1"
 
