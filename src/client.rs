@@ -30,27 +30,28 @@ impl<'a> Client<'a> {
         let params = self.args.values_of("PARAM");
         let form = self.args.is_present("form");
 
-        let mut res = Request::new(url, form)?
-            .add_params(params)?
-            .build()
-            .send(method, &self.http)?;
+        let mut res = Request::new(url, form)?.add_params(params)?.build().send(
+            method,
+            &self.http,
+        )?;
 
         let mut buf = String::new();
 
         if self.args.is_present("headers") || self.args.is_present("both") ||
-           self.args.is_present("out") ||
-           self.args.value_of("METHOD").unwrap() == "head" {
+            self.args.is_present("out") ||
+            self.args.value_of("METHOD").unwrap() == "head"
+        {
 
             if !self.args.is_present("suppress-info") {
-                let mut version = format!("{}", res.version());
-                let mut status = format!("{}", res.status());
+                let mut status_key = "Status".to_string();
+                let mut status_val = format!("{}", res.status());
 
                 if !cfg!(target_os = "windows") && !self.args.is_present("no-color") {
-                    version = version.blue().to_string();
-                    status = status.cyan().to_string();
+                    status_key = status_key.blue().to_string();
+                    status_val = status_val.yellow().to_string();
                 }
 
-                buf.push_str(&format!("{} {}\n", version, status));
+                buf.push_str(&format!("{}: {}\n", status_key, status_val));
             }
 
             if cfg!(target_os = "windows") || self.args.is_present("no-color") {

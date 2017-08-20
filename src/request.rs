@@ -18,11 +18,11 @@ pub struct Request<'a> {
 impl<'a> Request<'a> {
     pub fn new(url: &str, form: bool) -> Result<RequestBuilder> {
         Ok(RequestBuilder {
-               url: Url::parse(url).map_err(Error::from)?,
-               json: Json::new(),
-               headers: Headers::new(),
-               form: form,
-           })
+            url: Url::parse(url).map_err(Error::from)?,
+            json: Json::new(),
+            headers: Headers::new(),
+            form: form,
+        })
     }
 
     pub fn send(&self, method: &str, client: &Client) -> Result<Response> {
@@ -37,18 +37,22 @@ impl<'a> Request<'a> {
 
             // clap shouldn't allow invalid values, so this must be a bug.
             _ => {
-                panic!("An unexpected error occured! Please file an issue with the exact command \
-                        you ran here: https://github.com/saghm/rural/issues/new")
+                panic!(
+                    "An unexpected error occured! Please file an issue with the exact command \
+                        you ran here: https://github.com/saghm/rural/issues/new"
+                )
             }
-        };
+        }?;
 
         if self.form {
-            builder = builder.form(self.json);
+            builder.form(self.json)?;
         } else {
-            builder = builder.json(self.json);
+            builder.json(self.json)?;
         }
 
-        builder.headers(self.headers.clone()).send().map_err(Error::from)
+        builder.headers(self.headers.clone()).send().map_err(
+            Error::from,
+        )
     }
 }
 
@@ -80,11 +84,15 @@ impl RequestBuilder {
             } else if let Some(query_pair) = get_query_param(param) {
                 querystring.append_pair(&query_pair[1], &query_pair[2]);
             } else if let Some(header_pair) = get_header(param) {
-                self.headers.set_raw(String::from(&header_pair[1]),
-                                     vec![(&header_pair[2]).as_bytes().to_vec()]);
+                self.headers.set_raw(
+                    String::from(&header_pair[1]),
+                    vec![(&header_pair[2]).as_bytes().to_vec()],
+                );
             } else if let Some(body_pair) = get_body_param(param) {
-                self.json.insert(String::from(&body_pair[1]),
-                                 serde_json::Value::String(String::from(&body_pair[2])));
+                self.json.insert(
+                    String::from(&body_pair[1]),
+                    serde_json::Value::String(String::from(&body_pair[2])),
+                );
             } else {
                 return Err(Error::argument_error(param));
             }
@@ -158,7 +166,7 @@ mod tests {
             .send("get", &CLIENT)
             .unwrap();
 
-        assert_eq!(*res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::Ok);
     }
 
     #[test]
@@ -169,19 +177,20 @@ mod tests {
             .send("get", &CLIENT)
             .unwrap();
 
-        assert_eq!(*res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::Ok);
     }
 
     #[test]
     fn get_querystring_params() {
-        let mut res = Request::new("http://httpbin.org/response-headers?bass=john&drums=keith",
-                                   false)
-                .unwrap()
-                .build()
-                .send("get", &CLIENT)
-                .unwrap();
+        let mut res = Request::new(
+            "http://httpbin.org/response-headers?bass=john&drums=keith",
+            false,
+        ).unwrap()
+            .build()
+            .send("get", &CLIENT)
+            .unwrap();
 
-        assert_eq!(*res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::Ok);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
@@ -203,7 +212,7 @@ mod tests {
             .send("get", &CLIENT)
             .unwrap();
 
-        assert_eq!(*res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::Ok);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
@@ -221,7 +230,7 @@ mod tests {
             .send("post", &CLIENT)
             .unwrap();
 
-        assert_eq!(*res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::Ok);
     }
 
     #[test]
@@ -232,7 +241,7 @@ mod tests {
             .send("post", &CLIENT)
             .unwrap();
 
-        assert_eq!(*res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::Ok);
     }
 
     #[test]
@@ -247,7 +256,7 @@ mod tests {
             .send("get", &CLIENT)
             .unwrap();
 
-        assert_eq!(*res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::Ok);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
@@ -280,7 +289,7 @@ mod tests {
             .send("post", &CLIENT)
             .unwrap();
 
-        assert_eq!(*res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::Ok);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
@@ -324,7 +333,7 @@ mod tests {
             .send("post", &CLIENT)
             .unwrap();
 
-        assert_eq!(*res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::Ok);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
@@ -365,7 +374,7 @@ mod tests {
             .send("delete", &CLIENT)
             .unwrap();
 
-        assert_eq!(*res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::Ok);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
@@ -409,7 +418,7 @@ mod tests {
             .send("delete", &CLIENT)
             .unwrap();
 
-        assert_eq!(*res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::Ok);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
@@ -450,7 +459,7 @@ mod tests {
             .send("put", &CLIENT)
             .unwrap();
 
-        assert_eq!(*res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::Ok);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
@@ -494,7 +503,7 @@ mod tests {
             .send("put", &CLIENT)
             .unwrap();
 
-        assert_eq!(*res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::Ok);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
@@ -536,7 +545,7 @@ mod tests {
             .send("patch", &CLIENT)
             .unwrap();
 
-        assert_eq!(*res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::Ok);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
@@ -580,7 +589,7 @@ mod tests {
             .send("patch", &CLIENT)
             .unwrap();
 
-        assert_eq!(*res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::Ok);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
@@ -601,14 +610,15 @@ mod tests {
 
     #[test]
     fn head() {
-        let mut res = Request::new("http://httpbin.org/response-headers?bass=john&drums=keith",
-                                   false)
-                .unwrap()
-                .build()
-                .send("head", &CLIENT)
-                .unwrap();
+        let mut res = Request::new(
+            "http://httpbin.org/response-headers?bass=john&drums=keith",
+            false,
+        ).unwrap()
+            .build()
+            .send("head", &CLIENT)
+            .unwrap();
 
-        assert_eq!(*res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::Ok);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
@@ -617,14 +627,15 @@ mod tests {
 
     #[test]
     fn options() {
-        let mut res = Request::new("http://httpbin.org/response-headers?bass=john&drums=keith",
-                                   false)
-                .unwrap()
-                .build()
-                .send("options", &CLIENT)
-                .unwrap();
+        let mut res = Request::new(
+            "http://httpbin.org/response-headers?bass=john&drums=keith",
+            false,
+        ).unwrap()
+            .build()
+            .send("options", &CLIENT)
+            .unwrap();
 
-        assert_eq!(*res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::Ok);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
@@ -638,4 +649,3 @@ mod tests {
         assert!(allowed_methods.contains(&Method::Post));
     }
 }
-
