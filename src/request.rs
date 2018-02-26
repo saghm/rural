@@ -21,7 +21,7 @@ impl<'a> Request<'a> {
             url: Url::parse(url).map_err(Error::from)?,
             json: Json::new(),
             headers: Headers::new(),
-            form: form,
+            form,
         })
     }
 
@@ -36,23 +36,22 @@ impl<'a> Request<'a> {
             "put" => client.request(Method::Put, self.url),
 
             // clap shouldn't allow invalid values, so this must be a bug.
-            _ => {
-                panic!(
-                    "An unexpected error occured! Please file an issue with the exact command \
-                        you ran here: https://github.com/saghm/rural/issues/new"
-                )
-            }
-        }?;
+            _ => panic!(
+                "An unexpected error occured! Please file an issue with the exact command \
+                 you ran here: https://github.com/saghm/rural/issues/new"
+            ),
+        };
 
         if self.form {
-            builder.form(self.json)?;
+            builder.form(self.json);
         } else {
-            builder.json(self.json)?;
+            builder.json(self.json);
         }
 
-        builder.headers(self.headers.clone()).send().map_err(
-            Error::from,
-        )
+        builder
+            .headers(self.headers.clone())
+            .send()
+            .map_err(Error::from)
     }
 }
 
@@ -155,7 +154,7 @@ mod tests {
     use serde_json;
 
     lazy_static!{
-        static ref CLIENT: Client = Client::new().unwrap();
+        static ref CLIENT: Client = Client::new();
     }
 
     #[test]
@@ -521,7 +520,6 @@ mod tests {
         assert_eq!(headers["Keyboard"].as_str(), Some("the rabbit"));
         assert_eq!(headers["Keyboard-Also"].as_str(), Some("pete"));
     }
-
 
     #[test]
     fn patch_json() {

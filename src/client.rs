@@ -15,12 +15,12 @@ pub struct Client<'a> {
 }
 
 impl<'a> Client<'a> {
-    pub fn new(args: ArgMatches<'a>) -> Result<Self> {
-        Ok(Client {
-            args: args,
-            http: ::reqwest::Client::new()?,
+    pub fn new(args: ArgMatches<'a>) -> Self {
+        Client {
+            args,
+            http: ::reqwest::Client::new(),
             colorizer: Colorizer::arbitrary(),
-        })
+        }
     }
 
     // Unwraps are okay because clap guarantees that the required arguments are present.
@@ -30,18 +30,17 @@ impl<'a> Client<'a> {
         let params = self.args.values_of("PARAM");
         let form = self.args.is_present("form");
 
-        let mut res = Request::new(url, form)?.add_params(params)?.build().send(
-            method,
-            &self.http,
-        )?;
+        let mut res = Request::new(url, form)?
+            .add_params(params)?
+            .build()
+            .send(method, &self.http)?;
 
         let mut buf = String::new();
 
-        if self.args.is_present("headers") || self.args.is_present("both") ||
-            self.args.is_present("out") ||
-            self.args.value_of("METHOD").unwrap() == "head"
+        if self.args.is_present("headers") || self.args.is_present("both")
+            || self.args.is_present("out")
+            || self.args.value_of("METHOD").unwrap() == "head"
         {
-
             if !self.args.is_present("suppress-info") {
                 let mut status_key = "Status".to_string();
                 let mut status_val = format!("{}", res.status());

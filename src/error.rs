@@ -33,31 +33,23 @@ impl Error {
     fn new(kind: ErrorKind) -> Self {
         let message = match kind {
             ErrorKind::Argument(ref arg) => format!("An invalid argument was provided: {}", arg),
-            ErrorKind::Http(ref err) => {
-                format!(
-                    "An error occurred while making an HTTP request: {}",
-                    err.description()
-                )
-            }
+            ErrorKind::Http(ref err) => format!(
+                "An error occurred while making an HTTP request: {}",
+                err.description()
+            ),
             ErrorKind::Io(ref err) => format!("An I/O error occured: {}", err.description()),
-            ErrorKind::Json(ref err) => {
-                format!(
-                    "An error occurred while parsing a JSON argument: {}",
-                    err.description()
-                )
-            }
-            ErrorKind::Parser(ref err) => {
-                format!(
-                    "An error occurred while parsing the command-line arguments: {}",
-                    err.description()
-                )
-            }
-            ErrorKind::Url(ref err) => {
-                format!(
-                    "An error occurred while parsing the URL: {}",
-                    err.description()
-                )
-            }
+            ErrorKind::Json(ref err) => format!(
+                "An error occurred while parsing a JSON argument: {}",
+                err.description()
+            ),
+            ErrorKind::Parser(ref err) => format!(
+                "An error occurred while parsing the command-line arguments: {}",
+                err.description()
+            ),
+            ErrorKind::Url(ref err) => format!(
+                "An error occurred while parsing the URL: {}",
+                err.description()
+            ),
         };
 
         Error {

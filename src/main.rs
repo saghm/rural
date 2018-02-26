@@ -11,17 +11,9 @@ mod client;
 mod error;
 mod request;
 
-use client::Client;
-
 use clap::{App, Arg, ArgGroup};
 
-// Shamelessly stolen from burntsushi (okay, maybe with a *little* shame).
-macro_rules! eprintln {
-    ($($tt:tt)*) => {{
-        use std::io::Write;
-        let _ = writeln!(&mut ::std::io::stderr(), $($tt)*);
-    }}
-}
+use client::Client;
 
 fn main() {
     let matches = App::new("rural")
@@ -33,9 +25,7 @@ fn main() {
                 .help("HTTP request method to use")
                 .required(true)
                 .index(1)
-                .possible_values(
-                    &["delete", "get", "head", "options", "patch", "post", "put"],
-                ),
+                .possible_values(&["delete", "get", "head", "options", "patch", "post", "put"]),
         )
         .arg(
             Arg::with_name("URL")
@@ -47,7 +37,7 @@ fn main() {
             Arg::with_name("PARAM")
                 .help(
                     "querystring parameter (i.e `key==value`), body parameter (i.e `key=value)`, \
-                   json parameter (i.e. `key:=value`), or header (`name:value`)",
+                     json parameter (i.e. `key:=value`), or header (`name:value`)",
                 )
                 .index(3)
                 .multiple(true),
@@ -72,9 +62,7 @@ fn main() {
                 .long("suppress-info")
                 .requires("headers-printed"),
         )
-        .group(ArgGroup::with_name("headers-printed").args(
-            &["headers", "both"],
-        ))
+        .group(ArgGroup::with_name("headers-printed").args(&["headers", "both"]))
         .arg(
             Arg::with_name("no-color")
                 .help("Do not colorize the output")
@@ -99,7 +87,7 @@ fn main() {
 
     let client = Client::new(matches);
 
-    match client.and_then(|c| c.execute()) {
+    match client.execute() {
         Ok(output) => println!("{}", output),
         Err(err) => eprintln!("{}", err),
     }
