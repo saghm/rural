@@ -1,9 +1,9 @@
 use error::{Error, Result};
 
 use clap::Values;
-use reqwest::{Client, Method, Response, Url};
-use reqwest::header::Headers;
 use regex::{Captures, Regex};
+use reqwest::header::Headers;
+use reqwest::{Client, Method, Response, Url};
 use serde_json;
 
 type Json = serde_json::Map<String, serde_json::Value>;
@@ -42,10 +42,12 @@ impl<'a> Request<'a> {
             ),
         };
 
-        if self.form {
-            builder.form(self.json);
-        } else {
-            builder.json(self.json);
+        if method != "get" {
+            if self.form {
+                builder.form(self.json);
+            } else {
+                builder.json(self.json);
+            }
         }
 
         builder
@@ -149,11 +151,11 @@ mod tests {
     use std::collections::HashMap;
     use std::io::Read;
 
-    use reqwest::{Client, Method, StatusCode};
     use reqwest::header::Allow;
+    use reqwest::{Client, Method, StatusCode};
     use serde_json;
 
-    lazy_static!{
+    lazy_static! {
         static ref CLIENT: Client = Client::new();
     }
 
@@ -185,9 +187,9 @@ mod tests {
             "http://httpbin.org/response-headers?bass=john&drums=keith",
             false,
         ).unwrap()
-            .build()
-            .send("get", &CLIENT)
-            .unwrap();
+        .build()
+        .send("get", &CLIENT)
+        .unwrap();
 
         assert_eq!(res.status(), StatusCode::Ok);
 
@@ -612,9 +614,9 @@ mod tests {
             "http://httpbin.org/response-headers?bass=john&drums=keith",
             false,
         ).unwrap()
-            .build()
-            .send("head", &CLIENT)
-            .unwrap();
+        .build()
+        .send("head", &CLIENT)
+        .unwrap();
 
         assert_eq!(res.status(), StatusCode::Ok);
 
@@ -629,9 +631,9 @@ mod tests {
             "http://httpbin.org/response-headers?bass=john&drums=keith",
             false,
         ).unwrap()
-            .build()
-            .send("options", &CLIENT)
-            .unwrap();
+        .build()
+        .send("options", &CLIENT)
+        .unwrap();
 
         assert_eq!(res.status(), StatusCode::Ok);
 

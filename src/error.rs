@@ -1,5 +1,5 @@
-use std::{fmt, io, result};
 use std::error::Error as StdError;
+use std::{fmt, io, result};
 
 use clap;
 use reqwest::{self, UrlError};

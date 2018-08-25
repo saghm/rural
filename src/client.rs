@@ -37,7 +37,8 @@ impl<'a> Client<'a> {
 
         let mut buf = String::new();
 
-        if self.args.is_present("headers") || self.args.is_present("both")
+        if self.args.is_present("headers")
+            || self.args.is_present("both")
             || self.args.is_present("out")
             || self.args.value_of("METHOD").unwrap() == "head"
         {
@@ -72,7 +73,10 @@ impl<'a> Client<'a> {
             let mut body = String::new();
             let _ = res.read_to_string(&mut body)?;
 
-            let mut file = OpenOptions::new().write(true).create(true).open(file_name)?;
+            let mut file = OpenOptions::new()
+                .write(true)
+                .create(true)
+                .open(file_name)?;
             write!(file, "{}", body)?;
         } else if !self.args.is_present("headers") {
             if !buf.is_empty() {
