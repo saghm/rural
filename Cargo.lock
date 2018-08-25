@@ -674,7 +674,7 @@ dependencies = [
 
 [[package]]
 name = "rural"
-version = "0.7.3"
+version = "0.7.4"
 dependencies = [
  "clap 2.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "colored 1.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
