@@ -2,7 +2,7 @@ use error::{Error, Result};
 
 use clap::Values;
 use regex::{Captures, Regex};
-use reqwest::header::Headers;
+use reqwest::header::{HeaderMap, HeaderName, HeaderValue};
 use reqwest::{Client, Method, Response, Url};
 use serde_json;
 
@@ -11,7 +11,7 @@ type Json = serde_json::Map<String, serde_json::Value>;
 pub struct Request<'a> {
     url: &'a str,
     json: &'a Json,
-    headers: &'a Headers,
+    headers: &'a HeaderMap,
     form: bool,
 }
 
@@ -20,20 +20,20 @@ impl<'a> Request<'a> {
         Ok(RequestBuilder {
             url: Url::parse(url).map_err(Error::from)?,
             json: Json::new(),
-            headers: Headers::new(),
+            headers: HeaderMap::new(),
             form,
         })
     }
 
     pub fn send(&self, method: &str, client: &Client) -> Result<Response> {
         let mut builder = match method {
-            "delete" => client.request(Method::Delete, self.url),
+            "delete" => client.request(Method::DELETE, self.url),
             "get" => client.get(self.url),
-            "head" => client.request(Method::Head, self.url),
-            "options" => client.request(Method::Options, self.url),
-            "patch" => client.request(Method::Patch, self.url),
+            "head" => client.request(Method::HEAD, self.url),
+            "options" => client.request(Method::OPTIONS, self.url),
+            "patch" => client.request(Method::PATCH, self.url),
             "post" => client.post(self.url),
-            "put" => client.request(Method::Put, self.url),
+            "put" => client.request(Method::PUT, self.url),
 
             // clap shouldn't allow invalid values, so this must be a bug.
             _ => panic!(
@@ -44,9 +44,9 @@ impl<'a> Request<'a> {
 
         if method != "get" {
             if self.form {
-                builder.form(self.json);
+                builder = builder.form(self.json);
             } else {
-                builder.json(self.json);
+                builder = builder.json(self.json);
             }
         }
 
@@ -61,7 +61,7 @@ pub struct RequestBuilder {
     url: Url,
     json: Json,
     form: bool,
-    headers: Headers,
+    headers: HeaderMap,
 }
 
 impl RequestBuilder {
@@ -85,9 +85,9 @@ impl RequestBuilder {
             } else if let Some(query_pair) = get_query_param(param) {
                 querystring.append_pair(&query_pair[1], &query_pair[2]);
             } else if let Some(header_pair) = get_header(param) {
-                self.headers.set_raw(
-                    String::from(&header_pair[1]),
-                    vec![(&header_pair[2]).as_bytes().to_vec()],
+                self.headers.append(
+                    HeaderName::from_bytes(&header_pair[1].as_bytes())?,
+                    HeaderValue::from_str(&header_pair[2])?,
                 );
             } else if let Some(body_pair) = get_body_param(param) {
                 self.json.insert(
@@ -151,8 +151,8 @@ mod tests {
     use std::collections::HashMap;
     use std::io::Read;
 
-    use reqwest::header::Allow;
-    use reqwest::{Client, Method, StatusCode};
+    use reqwest::header::ALLOW;
+    use reqwest::{Client, StatusCode};
     use serde_json;
 
     lazy_static! {
@@ -167,7 +167,7 @@ mod tests {
             .send("get", &CLIENT)
             .unwrap();
 
-        assert_eq!(res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::OK);
     }
 
     #[test]
@@ -178,7 +178,7 @@ mod tests {
             .send("get", &CLIENT)
             .unwrap();
 
-        assert_eq!(res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::OK);
     }
 
     #[test]
@@ -192,7 +192,7 @@ mod tests {
         .send("get", &CLIENT)
         .unwrap();
 
-        assert_eq!(res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::OK);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
@@ -214,7 +214,7 @@ mod tests {
             .send("get", &CLIENT)
             .unwrap();
 
-        assert_eq!(res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::OK);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
@@ -232,7 +232,7 @@ mod tests {
             .send("post", &CLIENT)
             .unwrap();
 
-        assert_eq!(res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::OK);
     }
 
     #[test]
@@ -243,7 +243,7 @@ mod tests {
             .send("post", &CLIENT)
             .unwrap();
 
-        assert_eq!(res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::OK);
     }
 
     #[test]
@@ -258,7 +258,7 @@ mod tests {
             .send("get", &CLIENT)
             .unwrap();
 
-        assert_eq!(res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::OK);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
@@ -291,7 +291,7 @@ mod tests {
             .send("post", &CLIENT)
             .unwrap();
 
-        assert_eq!(res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::OK);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
@@ -335,7 +335,7 @@ mod tests {
             .send("post", &CLIENT)
             .unwrap();
 
-        assert_eq!(res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::OK);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
@@ -376,7 +376,7 @@ mod tests {
             .send("delete", &CLIENT)
             .unwrap();
 
-        assert_eq!(res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::OK);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
@@ -420,7 +420,7 @@ mod tests {
             .send("delete", &CLIENT)
             .unwrap();
 
-        assert_eq!(res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::OK);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
@@ -461,7 +461,7 @@ mod tests {
             .send("put", &CLIENT)
             .unwrap();
 
-        assert_eq!(res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::OK);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
@@ -505,7 +505,7 @@ mod tests {
             .send("put", &CLIENT)
             .unwrap();
 
-        assert_eq!(res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::OK);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
@@ -546,7 +546,7 @@ mod tests {
             .send("patch", &CLIENT)
             .unwrap();
 
-        assert_eq!(res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::OK);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
@@ -590,7 +590,7 @@ mod tests {
             .send("patch", &CLIENT)
             .unwrap();
 
-        assert_eq!(res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::OK);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
@@ -620,7 +620,7 @@ mod tests {
         .send("head", &CLIENT)
         .unwrap();
 
-        assert_eq!(res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::OK);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
@@ -638,17 +638,20 @@ mod tests {
         .send("options", &CLIENT)
         .unwrap();
 
-        assert_eq!(res.status(), StatusCode::Ok);
+        assert_eq!(res.status(), StatusCode::OK);
 
         let mut buf = String::new();
         let _ = res.read_to_string(&mut buf).unwrap();
         assert!(buf.is_empty());
 
-        let ref allowed_methods = res.headers().get::<Allow>().unwrap().0;
+        let header_value = res.headers().get(ALLOW).unwrap();
+        let raw_string = header_value.to_str().unwrap();
+        let allowed_methods: Vec<_> = raw_string.split(", ").map(str::to_string).collect();
+
         assert_eq!(allowed_methods.len(), 4);
-        assert!(allowed_methods.contains(&Method::Get));
-        assert!(allowed_methods.contains(&Method::Head));
-        assert!(allowed_methods.contains(&Method::Options));
-        assert!(allowed_methods.contains(&Method::Post));
+        assert!(allowed_methods.iter().any(|m| m == "GET"));
+        assert!(allowed_methods.iter().any(|m| m == "HEAD"));
+        assert!(allowed_methods.iter().any(|m| m == "OPTIONS"));
+        assert!(allowed_methods.iter().any(|m| m == "POST"));
     }
 }

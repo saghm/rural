@@ -17,9 +17,12 @@ pub struct Error {
 enum ErrorKind {
     Argument(String),
     Http(reqwest::Error),
+    InvalidHeaderName(reqwest::header::InvalidHeaderName),
+    InvalidHeaderValue(reqwest::header::InvalidHeaderValue),
     Io(io::Error),
     Json(serde_json::Error),
     Parser(clap::Error),
+    ToStr(reqwest::header::ToStrError),
     Url(UrlError),
 }
 
@@ -38,12 +41,24 @@ impl Error {
                 err.description()
             ),
             ErrorKind::Io(ref err) => format!("An I/O error occured: {}", err.description()),
+            ErrorKind::InvalidHeaderName(ref err) => format!(
+                "An invalid header name was specified: {}",
+                err.description()
+            ),
+            ErrorKind::InvalidHeaderValue(ref err) => format!(
+                "An invalid header name was specified: {}",
+                err.description()
+            ),
             ErrorKind::Json(ref err) => format!(
                 "An error occurred while parsing a JSON argument: {}",
                 err.description()
             ),
             ErrorKind::Parser(ref err) => format!(
                 "An error occurred while parsing the command-line arguments: {}",
+                err.description()
+            ),
+            ErrorKind::ToStr(ref err) => format!(
+                "An HTTP response header could not be converted to a string: {}",
                 err.description()
             ),
             ErrorKind::Url(ref err) => format!(
@@ -73,8 +88,11 @@ impl StdError for Error {
             ErrorKind::Argument(_) => None,
             ErrorKind::Http(ref err) => Some(err),
             ErrorKind::Io(ref err) => Some(err),
+            ErrorKind::InvalidHeaderName(ref err) => Some(err),
+            ErrorKind::InvalidHeaderValue(ref err) => Some(err),
             ErrorKind::Json(ref err) => Some(err),
             ErrorKind::Parser(ref err) => Some(err),
+            ErrorKind::ToStr(ref err) => Some(err),
             ErrorKind::Url(ref err) => Some(err),
         }
     }
@@ -92,6 +110,18 @@ impl From<io::Error> for Error {
     }
 }
 
+impl From<reqwest::header::InvalidHeaderName> for Error {
+    fn from(err: reqwest::header::InvalidHeaderName) -> Error {
+        Error::new(ErrorKind::InvalidHeaderName(err))
+    }
+}
+
+impl From<reqwest::header::InvalidHeaderValue> for Error {
+    fn from(err: reqwest::header::InvalidHeaderValue) -> Error {
+        Error::new(ErrorKind::InvalidHeaderValue(err))
+    }
+}
+
 impl From<serde_json::Error> for Error {
     fn from(err: serde_json::Error) -> Error {
         Error::new(ErrorKind::Json(err))
@@ -101,6 +131,12 @@ impl From<serde_json::Error> for Error {
 impl From<reqwest::Error> for Error {
     fn from(err: reqwest::Error) -> Error {
         Error::new(ErrorKind::Http(err))
+    }
+}
+
+impl From<reqwest::header::ToStrError> for Error {
+    fn from(err: reqwest::header::ToStrError) -> Error {
+        Error::new(ErrorKind::ToStr(err))
     }
 }
 

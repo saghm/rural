@@ -55,16 +55,24 @@ impl<'a> Client<'a> {
             }
 
             if cfg!(target_os = "windows") || self.args.is_present("no-color") {
-                buf.push_str(&format!("{}", res.headers()));
-            } else {
-                for (i, header) in res.headers().iter().enumerate() {
+                for (i, (header_name, header_value)) in res.headers().iter().enumerate() {
                     if i != 0 {
                         buf.push('\n');
                     }
 
-                    buf.push_str(&header.name().cyan().to_string());
+                    buf.push_str(header_name.as_str());
                     buf.push_str(": ");
-                    buf.push_str(&header.value_string().yellow().to_string());
+                    buf.push_str(header_value.to_str()?);
+                }
+            } else {
+                for (i, (header_name, header_value)) in res.headers().iter().enumerate() {
+                    if i != 0 {
+                        buf.push('\n');
+                    }
+
+                    buf.push_str(&header_name.as_str().cyan().to_string());
+                    buf.push_str(": ");
+                    buf.push_str(&header_value.to_str()?.yellow().to_string());
                 }
             }
         }
