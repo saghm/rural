@@ -37,8 +37,8 @@ impl<'a> Request<'a> {
 
             // clap shouldn't allow invalid values, so this must be a bug.
             _ => panic!(
-                "An unexpected error occured! Please file an issue with the exact command \
-                 you ran here: https://github.com/saghm/rural/issues/new"
+                "An unexpected error occured! Please file an issue with the exact command you ran \
+                 here: https://github.com/saghm/rural/issues/new"
             ),
         };
 
@@ -186,7 +186,8 @@ mod tests {
         let mut res = Request::new(
             "http://httpbin.org/response-headers?bass=john&drums=keith",
             false,
-        ).unwrap()
+        )
+        .unwrap()
         .build()
         .send("get", &CLIENT)
         .unwrap();
@@ -613,7 +614,8 @@ mod tests {
         let mut res = Request::new(
             "http://httpbin.org/response-headers?bass=john&drums=keith",
             false,
-        ).unwrap()
+        )
+        .unwrap()
         .build()
         .send("head", &CLIENT)
         .unwrap();
@@ -630,7 +632,8 @@ mod tests {
         let mut res = Request::new(
             "http://httpbin.org/response-headers?bass=john&drums=keith",
             false,
-        ).unwrap()
+        )
+        .unwrap()
         .build()
         .send("options", &CLIENT)
         .unwrap();
