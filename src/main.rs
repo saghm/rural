@@ -1,11 +1,5 @@
-extern crate clap;
-extern crate colored;
-extern crate json_color;
 #[macro_use]
 extern crate lazy_static;
-extern crate regex;
-extern crate reqwest;
-extern crate serde_json;
 
 mod client;
 mod error;
@@ -13,7 +7,7 @@ mod request;
 
 use clap::{App, Arg, ArgGroup};
 
-use client::Client;
+use crate::client::Client;
 
 fn main() {
     let matches = App::new("rural")
