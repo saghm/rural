@@ -83,7 +83,7 @@ impl StdError for Error {
         &self.message
     }
 
-    fn cause(&self) -> Option<&StdError> {
+    fn cause(&self) -> Option<&dyn StdError> {
         match self.kind {
             ErrorKind::Argument(_) => None,
             ErrorKind::Http(ref err) => Some(err),
