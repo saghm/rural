@@ -4,6 +4,7 @@ use crate::request::Request;
 use std::fs::OpenOptions;
 use std::io::{Read, Write};
 
+use atty::Stream;
 use clap::ArgMatches;
 use colored::Colorize;
 use json_color::Colorizer;
@@ -34,7 +35,7 @@ impl<'a> Client<'a> {
             .add_params(params)?
             .build()
             .send(method, &self.http)?;
-
+        let use_color = !self.args.is_present("no-color") && atty::is(Stream::Stdout);
         let mut buf = String::new();
 
         if self.args.is_present("headers")
@@ -46,7 +47,7 @@ impl<'a> Client<'a> {
                 let mut status_key = "Status".to_string();
                 let mut status_val = format!("{}", res.status());
 
-                if !cfg!(target_os = "windows") && !self.args.is_present("no-color") {
+                if !cfg!(target_os = "windows") && use_color {
                     status_key = status_key.blue().to_string();
                     status_val = status_val.yellow().to_string();
                 }
@@ -54,7 +55,7 @@ impl<'a> Client<'a> {
                 buf.push_str(&format!("{}: {}\n", status_key, status_val));
             }
 
-            if cfg!(target_os = "windows") || self.args.is_present("no-color") {
+            if cfg!(target_os = "windows") || !use_color {
                 for (i, (header_name, header_value)) in res.headers().iter().enumerate() {
                     if i != 0 {
                         buf.push('\n');
@@ -95,7 +96,7 @@ impl<'a> Client<'a> {
             let _ = res.read_to_end(&mut bytes)?;
             let mut body = String::from_utf8_lossy(&bytes).into_owned();
 
-            if !cfg!(target_os = "windows") && !self.args.is_present("no-color") {
+            if !cfg!(target_os = "windows") && use_color {
                 if let Ok(colored_json) = self.colorizer.colorize_json_str(&body) {
                     body = colored_json;
                 }
